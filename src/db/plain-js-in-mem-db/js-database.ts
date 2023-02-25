@@ -7,22 +7,13 @@ import { Database } from './database';
 export class JsDatabase implements DatabaseServiceAPI {
   private readonly database: Database = new Database();
 
-  insertProduct(product: Product): Product {
-    return this.database.insertProduct(product);
+  saveProduct(product: Product): Product {
+    return this.database.saveProduct(product);
   }
-  getProduct(id: string): Product {
+  getProduct(id: number): Product {
     return this.database.getProduct(id);
   }
   getProducts(): Product[] {
     return this.database.getProducts();
   }
 }
-/*
-problem:
-how to track dispatched to avoid doubled dispatches - need to persist?
-what does dispatch means:
-- update order status -> dispatched... no we cannot autmatically dispatch, it needs to be done by an employee
-
-
-
-*/ 

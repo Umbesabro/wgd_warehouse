@@ -1,7 +1,7 @@
 import { Product } from './entity/product';
 
 export interface DatabaseServiceAPI {
-  insertProduct(product: Product): Product;
-  getProduct(id: string): Product;
+  saveProduct(product: Product): Product;
+  getProduct(id: number): Product;
   getProducts(): Product[];
 }

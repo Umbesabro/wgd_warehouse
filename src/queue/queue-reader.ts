@@ -10,9 +10,10 @@ export class QueueReader {
   private connection: Amqp.Connection = new Amqp.Connection('amqp://localhost');
 
   constructor(private readonly queueService: QueueService) {
+    this.subscribeDispatch(QUEUES.WAREHOUSE_DISPATCH_ORDER);
   }
 
-  subscribeNewSalesOrder(queueName) {
+  subscribeDispatch(queueName) {
     let queue;
     let exchange;
     if (!this.queues[queueName]) {
@@ -27,6 +28,7 @@ export class QueueReader {
     }
 
     queue.activateConsumer((message) =>
+      this.queueService.dispatchProducts(message),
     );
   }
 }
