@@ -11,9 +11,22 @@ export class QueueReader {
 
   constructor(private readonly queueService: QueueService) {
     this.subscribeDispatch(QUEUES.WAREHOUSE_DISPATCH_ORDER);
+    this.subscribeAddProduct(QUEUES.ADD_PRODUCT);
   }
 
   subscribeDispatch(queueName) {
+    let queue = this.getQueue(queueName);
+    queue.activateConsumer((message) =>
+      this.queueService.dispatchProducts(message),
+    );
+  }
+
+  subscribeAddProduct(queueName) {
+    let queue = this.getQueue(queueName);
+    queue.activateConsumer((message) => this.queueService.addProduct(message));
+  }
+
+  private getQueue(queueName) {
     let queue;
     let exchange;
     if (!this.queues[queueName]) {
@@ -26,9 +39,6 @@ export class QueueReader {
       queue = this.queues[queueName];
       exchange = this.exchanges[queueName];
     }
-
-    queue.activateConsumer((message) =>
-      this.queueService.dispatchProducts(message),
-    );
+    return queue;
   }
 }

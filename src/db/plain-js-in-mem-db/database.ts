@@ -1,13 +1,17 @@
+import { ProductDto } from 'src/dto/product.dto';
 import { Product } from '../entity/product';
 
 export class Database {
   private readonly products: { [key: string]: Product } = {};
-  private id: number = -1;
-  saveProduct(product: Product): Product {
-    if (product.id === undefined) {
-      product.id = ++this.id;
-    }
+
+  saveProduct(productDto: ProductDto): Product {
+    const product = Product.fromDto(productDto);
     this.products[product.id] = product;
+
+    console.log(`[Products]
+      ${JSON.stringify(this.products)};
+    `);
+
     return this.products[product.id];
   }
 

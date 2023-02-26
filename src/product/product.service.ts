@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JsDatabase } from 'src/db/plain-js-in-mem-db/js-database';
+import { ProductDto } from 'src/dto/product.dto';
 import { SalesOrderDto } from 'src/dto/sales-order.dto';
 import { EventLogClient } from 'src/event-log-client/sales/event-log-client';
 
@@ -19,12 +20,24 @@ export class ProductService {
       });
       this.eventLogClient.dispatchSuccessful(salesOrderDto);
     } else {
-        console.log(`Cannot dispatch order ${salesOrderDto.id} due to misding products on stock`);
+      console.log(
+        `Cannot dispatch order ${salesOrderDto.id} due to missing products on stock`,
+      );
       this.eventLogClient.dispatchFailed(salesOrderDto);
     }
   }
 
-  private isOnStock(salesOrderDto: SalesOrderDto): boolean { 
+  addProduct(product: ProductDto) {
+    const productOnStock = this.jsDatabase.getProduct(product.id);
+    if (!productOnStock) {
+      this.jsDatabase.saveProduct(product);
+    } else {
+      productOnStock.qty += product.qty;
+      this.jsDatabase.saveProduct(productOnStock);
+    }
+  }
+
+  private isOnStock(salesOrderDto: SalesOrderDto): boolean {
     for (const orderPosition of salesOrderDto.positions) {
       const product = this.jsDatabase.getProduct(orderPosition.productId);
       if (product === undefined || product.qty < orderPosition.quantity) {
