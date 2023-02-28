@@ -13,11 +13,9 @@ export class QueueService {
       const { payload } = salesOrderMsg.getContent();
       const salesOrderDto: SalesOrderDto = JSON.parse(payload);
       this.productService.dispatchProducts(salesOrderDto);
+      salesOrderMsg.ack(false);
     } catch (err) {
-      console.error(
-        `Failed to process message ${JSON.stringify(salesOrderMsg)}`,
-        err,
-      );
+      console.error(`Failed to process message ${JSON.stringify(salesOrderMsg)}`, err);
     }
   }
 
@@ -26,11 +24,9 @@ export class QueueService {
       const { payload } = productMsg.getContent();
       const productDto: ProductDto = JSON.parse(payload);
       this.productService.addProduct(productDto);
+      productMsg.ack(false);
     } catch (err) {
-      console.error(
-        `Failed to process message ${JSON.stringify(productMsg)}`,
-        err,
-      );
+      console.error(`Failed to process message ${JSON.stringify(productMsg)}`, err);
     }
   }
 }

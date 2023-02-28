@@ -1,45 +1,47 @@
-import { Injectable } from '@nestjs/common';
-import { JsDatabase } from 'src/db/plain-js-in-mem-db/js-database';
+import { Injectable, Logger } from '@nestjs/common';
 import { ProductDto } from 'src/dto/product.dto';
 import { SalesOrderDto } from 'src/dto/sales-order.dto';
 import { EventLogClient } from 'src/event-log-client/sales/event-log-client';
+import { Product } from '../db/model/product';
+import { PsqlDatabase } from '../db/psql-database.service';
 
 @Injectable()
 export class ProductService {
-  constructor(
-    private readonly jsDatabase: JsDatabase,
-    private readonly eventLogClient: EventLogClient,
-  ) {}
+  private readonly logger = new Logger(ProductService.name);
+
+  constructor(private readonly eventLogClient: EventLogClient, private readonly psqlDatabase: PsqlDatabase) {}
 
   dispatchProducts(salesOrderDto: SalesOrderDto) {
     if (this.isOnStock(salesOrderDto)) {
-      salesOrderDto.positions.forEach((pos) => {
-        const product = this.jsDatabase.getProduct(pos.productId);
+      salesOrderDto.positions.forEach(async (pos) => {
+        const product: Product = await this.psqlDatabase.findOneById(pos.productId);
         product.qty -= pos.quantity;
-        this.jsDatabase.saveProduct(product);
+        this.psqlDatabase.save(product);
       });
       this.eventLogClient.dispatchSuccessful(salesOrderDto);
     } else {
-      console.log(
-        `Cannot dispatch order ${salesOrderDto.id} due to missing products on stock`,
-      );
+      this.logger.log(`Cannot dispatch order ${salesOrderDto.id} due to missing products on stock`);
       this.eventLogClient.dispatchFailed(salesOrderDto);
     }
   }
 
-  addProduct(product: ProductDto) {
-    const productOnStock = this.jsDatabase.getProduct(product.id);
+  async addProduct(product: ProductDto) {
+    console.log(product);
+    const productOnStock = await Product.findOne({
+      where: { id: product.id },
+    });
+    console.log("as");
     if (!productOnStock) {
-      this.jsDatabase.saveProduct(product);
+      this.psqlDatabase.createProduct(product);
     } else {
       productOnStock.qty += product.qty;
-      this.jsDatabase.saveProduct(productOnStock);
+      this.psqlDatabase.save(productOnStock);
     }
   }
 
-  private isOnStock(salesOrderDto: SalesOrderDto): boolean {
+  private async isOnStock(salesOrderDto: SalesOrderDto): Promise<boolean> {
     for (const orderPosition of salesOrderDto.positions) {
-      const product = this.jsDatabase.getProduct(orderPosition.productId);
+      const product = await this.psqlDatabase.findOneById(orderPosition.productId);
       if (product === undefined || product.qty < orderPosition.quantity) {
         return false;
       }
