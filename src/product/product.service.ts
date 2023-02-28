@@ -11,8 +11,8 @@ export class ProductService {
 
   constructor(private readonly eventLogClient: EventLogClient, private readonly psqlDatabase: PsqlDatabase) {}
 
-  dispatchProducts(salesOrderDto: SalesOrderDto) {
-    if (this.isOnStock(salesOrderDto)) {
+  async dispatchProducts(salesOrderDto: SalesOrderDto) {
+    if (await this.isOnStock(salesOrderDto)) {
       salesOrderDto.positions.forEach(async (pos) => {
         const product: Product = await this.psqlDatabase.findOneById(pos.productId);
         product.qty -= pos.quantity;
@@ -30,7 +30,6 @@ export class ProductService {
     const productOnStock = await Product.findOne({
       where: { id: product.id },
     });
-    console.log("as");
     if (!productOnStock) {
       this.psqlDatabase.createProduct(product);
     } else {
@@ -42,7 +41,7 @@ export class ProductService {
   private async isOnStock(salesOrderDto: SalesOrderDto): Promise<boolean> {
     for (const orderPosition of salesOrderDto.positions) {
       const product = await this.psqlDatabase.findOneById(orderPosition.productId);
-      if (product === undefined || product.qty < orderPosition.quantity) {
+      if (product === null || product.qty < orderPosition.quantity) {
         return false;
       }
     }

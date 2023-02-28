@@ -8,22 +8,22 @@ import { ProductService } from 'src/product/product.service';
 export class QueueService {
   constructor(private readonly productService: ProductService) {}
 
-  dispatchProducts(salesOrderMsg: Message) {
+  async dispatchProducts(salesOrderMsg: Message) {
     try {
       const { payload } = salesOrderMsg.getContent();
       const salesOrderDto: SalesOrderDto = JSON.parse(payload);
-      this.productService.dispatchProducts(salesOrderDto);
+      await this.productService.dispatchProducts(salesOrderDto);
       salesOrderMsg.ack(false);
     } catch (err) {
       console.error(`Failed to process message ${JSON.stringify(salesOrderMsg)}`, err);
     }
   }
 
-  addProduct(productMsg: Message) {
+  async addProduct(productMsg: Message) {
     try {
       const { payload } = productMsg.getContent();
       const productDto: ProductDto = JSON.parse(payload);
-      this.productService.addProduct(productDto);
+      await this.productService.addProduct(productDto);
       productMsg.ack(false);
     } catch (err) {
       console.error(`Failed to process message ${JSON.stringify(productMsg)}`, err);
