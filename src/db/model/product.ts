@@ -14,8 +14,8 @@ export class Product
   public name!: string;
   public qty!: number;
 
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  public readonly createdAt?: Date;
+  public readonly updatedAt?: Date;
 
   public static initModel(sequelize) {
     this.init(

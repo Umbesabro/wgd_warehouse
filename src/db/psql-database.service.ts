@@ -18,7 +18,7 @@ export class PsqlDatabase {
     this.logger.log('Database connection initilized successfuly');
   }
 
-  save<T extends Model>(model: T): void {
+  update<T extends Model>(model: T): void {
     try {
       model.save();
     } catch (err) {

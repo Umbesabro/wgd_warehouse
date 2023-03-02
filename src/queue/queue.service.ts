@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Message } from 'amqp-ts';
-import { ProductDto } from 'src/dto/product.dto';
-import { SalesOrderDto } from 'src/dto/sales-order.dto';
-import { ProductService } from 'src/product/product.service';
+import { ProductDto } from '../dto/product.dto';
+import { SalesOrderDto } from '../dto/sales-order.dto';
+import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class QueueService {
